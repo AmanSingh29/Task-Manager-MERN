@@ -1,7 +1,7 @@
 import React from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 
-export default function TaskItem({ task, onEdit }) {
+export default function TaskItem({ task, onEdit, onDelete }) {
   return (
     <div className="bg-white shadow-md rounded-lg p-4 mb-4 flex flex-col sm:flex-row sm:items-center justify-between transition hover:shadow-lg">
       <div className="flex-1">
@@ -33,7 +33,7 @@ export default function TaskItem({ task, onEdit }) {
         <button onClick={() => onEdit(task)} className="text-blue-500 hover:text-blue-700 transition cursor-pointer">
           <FiEdit size={20} />
         </button>
-        <button className="text-red-500 hover:text-red-700 transition cursor-pointer">
+        <button onClick={() => onDelete(task)} className="text-red-500 hover:text-red-700 transition cursor-pointer">
           <FiTrash2 size={20} />
         </button>
       </div>

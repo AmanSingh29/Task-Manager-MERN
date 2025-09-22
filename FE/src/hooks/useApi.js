@@ -42,6 +42,6 @@ export default function useApi() {
     post: (url, body, config) => request("post", url, body, config),
     patch: (url, body, config) => request("patch", url, body, config),
     put: (url, body, config) => request("put", url, body, config),
-    del: (url, config) => request("delete", url, null, config),
+    del: (url, body, config) => request("delete", url, body, config),
   };
 }

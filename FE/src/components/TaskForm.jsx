@@ -30,8 +30,7 @@ export default function TaskForm({ isOpen, onClose, task = null, onSuccess }) {
       setFormData({
         title: "",
         description: "",
-        dueDate: "",
-        status: "pending",
+        dueDate: ""
       });
     }
   }, [task, isEdit]);

@@ -3,16 +3,18 @@ import useApi from "../hooks/useApi";
 import TaskItem from "../components/TaskItem";
 import DashboardLayout from "../components/DashboardLayout";
 import TaskForm from "../components/TaskForm";
+import ConfirmationModal from "../components/ConfirmationModal";
+import { DELETE_TASK, GET_TASK } from "../contants/endPoints";
 
 export default function Dashboard() {
-  const { get, loading, error } = useApi();
+  const { get, loading, error, del } = useApi();
   const [tasks, setTasks] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState("");
   const [currentTask, setCurrentTask] = useState(null);
 
   const fetchTasks = async () => {
     try {
-      const res = await get("/task");
+      const res = await get(GET_TASK);
       setTasks(res.tasks);
     } catch (err) {
       console.error("Failed to fetch tasks:", err);
@@ -21,7 +23,18 @@ export default function Dashboard() {
 
   const handleEditTask = (task) => {
     setCurrentTask(task);
-    setModalOpen(true);
+    setModalOpen("edit");
+  };
+
+  const handleConfirmDelete = async () => {
+    await del(DELETE_TASK, { _id: currentTask?._id });
+    fetchTasks();
+    setModalOpen(null);
+  };
+
+  const handleTaskDelete = (task) => {
+    setCurrentTask(task);
+    setModalOpen("delete");
   };
 
   useEffect(() => {
@@ -46,15 +59,28 @@ export default function Dashboard() {
       ) : (
         <div className="grid gap-4">
           {tasks.map((task) => (
-            <TaskItem onEdit={handleEditTask} key={task._id} task={task} />
+            <TaskItem
+              onDelete={handleTaskDelete}
+              onEdit={handleEditTask}
+              key={task._id}
+              task={task}
+            />
           ))}
         </div>
       )}
       <TaskForm
-        isOpen={modalOpen}
+        isOpen={modalOpen === "edit"}
         onClose={() => setModalOpen(false)}
         onSuccess={fetchTasks}
         task={currentTask}
+      />
+      <ConfirmationModal
+        isOpen={modalOpen === "delete"}
+        title="Delete Task?"
+        description={`Are you sure you want to delete "${currentTask?.title}"?`}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setModalOpen(false)}
+        loading={loading}
       />
     </DashboardLayout>
   );
