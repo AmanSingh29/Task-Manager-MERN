@@ -26,7 +26,23 @@ const updateTaskValidator = celebrate({
     .required(),
 });
 
+const deleteTaskValidator = celebrate({
+  [Segments.BODY]: Joi.object({
+    _id: Joi.string().required(),
+  }).required(),
+});
+
+const getTasksValidator = celebrate({
+  [Segments.QUERY]: Joi.object({
+    search_query: Joi.string().optional().allow(""),
+    page: Joi.string().min(1).optional(),
+    limit: Joi.string().optional(),
+  }),
+});
+
 module.exports = {
   createTaskValidator,
   updateTaskValidator,
+  deleteTaskValidator,
+  getTasksValidator
 };

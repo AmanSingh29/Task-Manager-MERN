@@ -11,7 +11,7 @@ const generateToken = (user) => {
     },
     JWT_SECRET,
     {
-      expiresIn: JWT_EXPIRES_IN || "1h",
+      expiresIn: JWT_EXPIRES_IN || "1d",
     }
   );
 };
