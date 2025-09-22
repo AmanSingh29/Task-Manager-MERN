@@ -53,7 +53,30 @@ async function handleLogin(req, res, next) {
   next();
 }
 
+async function me(req, res, next) {
+  const { _id } = req.user;
+
+  const user = await User.findById(_id);
+  if (!user) {
+    throw new AppError("Record Not Found!", 404);
+  }
+
+  const { name, email, role } = user;
+  res.data = {
+    statusCode: 200,
+    message: "Authenticated Successfully",
+    user: {
+      _id,
+      name,
+      email,
+      role,
+    },
+  };
+  next();
+}
+
 module.exports = {
   handleSignup,
   handleLogin,
+  me
 };

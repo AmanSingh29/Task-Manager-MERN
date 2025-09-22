@@ -4,12 +4,15 @@ import {
   setUserToLocalStorage,
   clearAuthFromLocalStorage,
 } from "../utils/authHelpers";
+import useApi from "../hooks/useApi";
+import { ME } from "../contants/endPoints";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { get } = useApi()
 
   const setAuthUser = (user, token) => {
     setUser(user);
@@ -22,14 +25,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const verifyUser = async () => {
-    const stored = getUserFromLocalStorage();
-    if (!stored?.token) {
+    const storedUser = getUserFromLocalStorage();
+    if (!storedUser?.token) {
       setLoading(false);
       return;
     }
     try {
-      const res = await get("/auth/me");
-      setUser(res.data.user);
+      const res = await get(ME);
+      setUser(res.user);
     } catch (err) {
       clearAuthFromLocalStorage();
     } finally {

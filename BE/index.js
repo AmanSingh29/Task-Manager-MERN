@@ -6,8 +6,10 @@ const path = require("path");
 const fs = require("fs");
 const globalErrorHandlerMw = require("./src/middlewares/globalErrorHandler.mw");
 const express = require("express");
+const cors = require("cors");
 
 app.use(express.json());
+app.use(cors());
 
 connectDB()
 

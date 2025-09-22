@@ -3,11 +3,12 @@ import { useState, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import useApi from "../hooks/useApi";
+import { LOGIN, SIGNUP } from "../contants/endPoints";
 
 export default function AuthForm() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { handleLogin, handleSignup } = useContext(AuthContext);
+  const { setAuthUser } = useContext(AuthContext);
   const { post, loading, error } = useApi();
 
   const isLogin = location.pathname === "/login";
@@ -26,16 +27,18 @@ export default function AuthForm() {
     e.preventDefault();
     try {
       if (isLogin) {
-        const res = await post("/auth/login", {
+        const res = await post(LOGIN, {
           email: form.email,
           password: form.password,
         });
-        handleLogin(res); // update context
+        const { user, token } = res;
+        setAuthUser(user, token);
       } else {
-        const res = await post("/auth/signup", form);
-        handleSignup(res); // update context
+        const res = await post(SIGNUP, form);
+        const { user, token } = res;
+        setAuthUser(user, token);
       }
-      navigate("/"); // redirect to dashboard
+      navigate("/");
     } catch (err) {
       console.error(err);
     }
@@ -108,7 +111,7 @@ export default function AuthForm() {
           {isLogin ? "Don’t have an account?" : "Already have an account?"}{" "}
           <button
             onClick={() => navigate(isLogin ? "/signup" : "/login")}
-            className="text-indigo-600 font-medium hover:underline"
+            className="text-indigo-600 font-medium hover:underline cursor-pointer"
           >
             {isLogin ? "Sign up" : "Login"}
           </button>
