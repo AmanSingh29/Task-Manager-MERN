@@ -30,11 +30,17 @@ export default function Dashboard() {
     await del(DELETE_TASK, { _id: currentTask?._id });
     fetchTasks();
     setModalOpen(null);
+    setCurrentTask(null);
   };
 
   const handleTaskDelete = (task) => {
     setCurrentTask(task);
     setModalOpen("delete");
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(null);
+    setCurrentTask(null);
   };
 
   useEffect(() => {
@@ -46,7 +52,7 @@ export default function Dashboard() {
       <h1 className="text-2xl font-bold mb-4">Welcome to your Task Manager</h1>
       <button
         className="bg-indigo-600 text-white px-4 py-2 rounded-md mb-4 hover:bg-indigo-700 transition"
-        onClick={() => setModalOpen(true)}
+        onClick={() => setModalOpen("edit")}
       >
         Add Task
       </button>
@@ -70,7 +76,7 @@ export default function Dashboard() {
       )}
       <TaskForm
         isOpen={modalOpen === "edit"}
-        onClose={() => setModalOpen(false)}
+        onClose={handleCloseModal}
         onSuccess={fetchTasks}
         task={currentTask}
       />
@@ -79,7 +85,7 @@ export default function Dashboard() {
         title="Delete Task?"
         description={`Are you sure you want to delete "${currentTask?.title}"?`}
         onConfirm={handleConfirmDelete}
-        onCancel={() => setModalOpen(false)}
+        onCancel={handleCloseModal}
         loading={loading}
       />
     </DashboardLayout>
