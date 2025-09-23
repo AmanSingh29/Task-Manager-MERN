@@ -4,7 +4,7 @@ const { TASK_STATUS } = require("../constants/enums");
 const createTaskValidator = celebrate({
   [Segments.BODY]: Joi.object({
     title: Joi.string().min(5).max(50).required(),
-    description: Joi.string().max(300).optional(),
+    description: Joi.string().max(300).optional().allow(""),
     status: Joi.string()
       .valid(...Object.values(TASK_STATUS))
       .optional(),

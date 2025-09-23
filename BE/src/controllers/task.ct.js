@@ -5,12 +5,13 @@ const Task = mongoose.model("tasks");
 
 async function createTask(req, res, next) {
   const { _id } = req.user;
-  const { title, description, dueDate } = req.body;
+  const { title, description, dueDate, status } = req.body;
   const data = await new Task({
     title,
     description,
     dueDate,
     created_by: _id,
+    status
   }).save();
   res.data = {
     statusCode: 201,

@@ -3,18 +3,25 @@ import { FiX } from "react-icons/fi";
 import useApi from "../hooks/useApi";
 import { CREATE_TASK, UPDATE_TASK } from "../contants/endPoints";
 
-const TASK_STATUSES = ["pending", "ongoing", "completed"];
+const TASK_STATUS_LIST = [
+  { id: 1, label: "Pending", value: "pending" },
+  { id: 2, label: "Ongoing", value: "ongoing" },
+  { id: 3, label: "Completed", value: "completed" },
+];
+
+const initialFormData = {
+  title: "",
+  description: "",
+  dueDate: "",
+  status: "pending",
+};
 
 export default function TaskForm({ isOpen, onClose, task = null, onSuccess }) {
   const { post, patch, loading, error } = useApi();
   const isEdit = Boolean(task);
 
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    dueDate: "",
-    status: "pending",
-  });
+  const [formData, setFormData] = useState(initialFormData);
+  const [formErrors, setFormErrors] = useState({});
 
   useEffect(() => {
     if (isEdit && task) {
@@ -27,28 +34,57 @@ export default function TaskForm({ isOpen, onClose, task = null, onSuccess }) {
         status: task.status || "pending",
       });
     } else {
-      setFormData({
-        title: "",
-        description: "",
-        dueDate: ""
-      });
+      setFormData(initialFormData);
     }
+    setFormErrors({});
   }, [task, isEdit]);
+
+  const validate = () => {
+    const errors = {};
+
+    if (!formData.title.trim()) {
+      errors.title = "Title is required";
+    } else if (formData.title.length > 50) {
+      errors.title = "Title must be less than 50 characters";
+    }
+
+    if (formData.description.length > 300) {
+      errors.description = "Description must be less than 300 characters";
+    }
+
+    if (!formData.dueDate) {
+      errors.dueDate = "Due date is required";
+    }
+
+    if (!formData.status) {
+      errors.status = "Status is required";
+    }
+
+    return errors;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
     try {
       if (isEdit) {
-        formData._id = task?._id;
-        await patch(UPDATE_TASK, formData);
+        await patch(UPDATE_TASK, { ...formData, _id: task?._id });
       } else {
         await post(CREATE_TASK, formData);
       }
+      setFormData(initialFormData);
+      setFormErrors({});
       onSuccess?.();
       onClose();
     } catch (err) {
@@ -59,10 +95,10 @@ export default function TaskForm({ isOpen, onClose, task = null, onSuccess }) {
   if (!isOpen) return null;
 
   const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    if (e.target === e.currentTarget) onClose();
   };
+
+  const isFormInvalid = Object.keys(validate()).length > 0;
 
   return (
     <div
@@ -81,7 +117,16 @@ export default function TaskForm({ isOpen, onClose, task = null, onSuccess }) {
           {isEdit ? "Edit Task" : "Create Task"}
         </h2>
 
-        {error && <p className="text-red-500 mb-2">{error}</p>}
+        {(error || Object.keys(formErrors).length > 0) && (
+          <div className="mb-3 space-y-1">
+            {error && <p className="text-red-500">{error}</p>}
+            {Object.values(formErrors).map((errMsg, idx) => (
+              <p key={idx} className="text-red-500 text-sm">
+                {errMsg}
+              </p>
+            ))}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
@@ -91,8 +136,12 @@ export default function TaskForm({ isOpen, onClose, task = null, onSuccess }) {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              maxLength={50}
+              className={`w-full border rounded-md p-2 focus:outline-none focus:ring-2 ${
+                formErrors.title
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-indigo-500"
+              }`}
             />
           </div>
 
@@ -103,7 +152,12 @@ export default function TaskForm({ isOpen, onClose, task = null, onSuccess }) {
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              maxLength={300}
+              className={`w-full border rounded-md p-2 focus:outline-none focus:ring-2 ${
+                formErrors.description
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-indigo-500"
+              }`}
             />
           </div>
 
@@ -114,32 +168,42 @@ export default function TaskForm({ isOpen, onClose, task = null, onSuccess }) {
               name="dueDate"
               value={formData.dueDate}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className={`w-full border rounded-md p-2 focus:outline-none focus:ring-2 ${
+                formErrors.dueDate
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-indigo-500"
+              }`}
             />
           </div>
 
-          {isEdit && (
-            <div>
-              <label className="block mb-1 font-medium">Status</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                {TASK_STATUSES.map((status) => (
-                  <option key={status} value={status}>
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div>
+            <label className="block mb-1 font-medium">Status</label>
+            <select
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className={`w-full border rounded-md p-2 focus:outline-none focus:ring-2 ${
+                formErrors.status
+                  ? "border-red-500 focus:ring-red-500"
+                  : "border-gray-300 focus:ring-indigo-500"
+              }`}
+            >
+              {TASK_STATUS_LIST.map(({ id, label, value }) => (
+                <option key={id} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <button
             type="submit"
-            disabled={loading}
-            className="bg-indigo-600 text-white font-semibold py-2 rounded-md hover:bg-indigo-700 transition cursor-pointer"
+            disabled={loading || isFormInvalid}
+            className={`font-semibold py-2 rounded-md transition ${
+              loading || isFormInvalid
+                ? "bg-gray-400 text-gray-700 cursor-not-allowed"
+                : "bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer"
+            }`}
           >
             {loading ? "Saving..." : isEdit ? "Update Task" : "Create Task"}
           </button>
