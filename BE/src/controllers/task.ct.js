@@ -95,7 +95,7 @@ async function getTasks(req, res, next) {
     },
     {
       $addFields: {
-        user: "$user.name",
+        author: "$user.name",
       },
     },
     {

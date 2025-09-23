@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useContext } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { AuthContext } from "../context/AuthContext";
 
 export default function TaskItem({ task, onEdit, onDelete }) {
+  const { user } = useContext(AuthContext);
+
   return (
     <div className="bg-white shadow-md rounded-lg p-4 mb-4 flex flex-col sm:flex-row sm:items-center justify-between transition hover:shadow-lg">
       <div className="flex-1">
@@ -29,13 +32,27 @@ export default function TaskItem({ task, onEdit, onDelete }) {
         </div>
       </div>
 
-      <div className="flex gap-4 mt-3 sm:mt-0">
-        <button onClick={() => onEdit(task)} className="text-blue-500 hover:text-blue-700 transition cursor-pointer">
-          <FiEdit size={20} />
-        </button>
-        <button onClick={() => onDelete(task)} className="text-red-500 hover:text-red-700 transition cursor-pointer">
-          <FiTrash2 size={20} />
-        </button>
+      <div className="flex gap-4 mt-3 sm:mt-0 items-center">
+        {user?.role === "admin" ? (
+          <span className="text-gray-700 text-sm">
+            Author: {task?.author || "Unknown"}
+          </span>
+        ) : (
+          <>
+            <button
+              onClick={() => onEdit(task)}
+              className="text-blue-500 hover:text-blue-700 transition cursor-pointer"
+            >
+              <FiEdit size={20} />
+            </button>
+            <button
+              onClick={() => onDelete(task)}
+              className="text-red-500 hover:text-red-700 transition cursor-pointer"
+            >
+              <FiTrash2 size={20} />
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
