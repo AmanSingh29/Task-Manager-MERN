@@ -101,6 +101,55 @@ npm run dev
 4. Save the changes in the database.
 5. Login with that user’s credentials again. Now the user will have admin access and can view/manage all tasks in the dashboard.
 
+## Backend Testing with Jest
+
+This project includes a simple test case for the **User model** using **Jest** and **in-memory MongoDB**.
+
+### What This Test Does
+
+* **Test 1:** `should create & save user successfully`
+  Verifies that a new user can be created and saved in the database with all required fields (`name`, `email`, `password`).
+
+* **Test 2:** `should fail to create User without email`
+  Ensures that the database throws a validation error if a user is created without an `email` field, which is required.
+
+The tests use **MongoMemoryServer**, which is an in-memory MongoDB instance. This allows tests to run without affecting your real database.
+
+### How to Run the Tests
+
+1. Install dev dependencies (if not already installed):
+
+```bash
+npm install --save-dev jest mongodb-memory-server
+```
+
+2. Make sure your backend dependencies are installed:
+
+```bash
+npm i -f
+```
+
+3. Run the tests:
+
+```bash
+npm test
+```
+
+You should see output similar to:
+
+```
+PASS  src/tests/user.test.js
+  User Model Test
+    ✓ should create & save user successfully
+    ✓ should fail to create User without email
+```
+
+### Notes
+
+* These tests do **not** affect your real MongoDB data; they run on an in-memory database.
+* You can add more tests for other models and API routes using the same approach.
+
+
 ---
 
 ## Notes
