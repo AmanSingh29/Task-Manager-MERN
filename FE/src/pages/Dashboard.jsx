@@ -14,20 +14,24 @@ export default function Dashboard() {
   const [modalData, setModalData] = useState({ type: "", task: null });
   const [searchQuery, setSearchQuery] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const totalPages = 10;
+  const [totalResults, setTotalResults] = useState(0);
+
+  const pageSize = 10;
+  const totalPages = Math.ceil(totalResults / pageSize);
 
   const handleCloseModal = () => {
     setModalData({ type: "", task: null });
   };
 
-  const fetchTasks = async (query = "") => {
+  const fetchTasks = async (query = "", page) => {
     try {
       const res = await get(
         `${GET_TASK}?search_query=${encodeURIComponent(
           query
-        )}&page=${currentPage}`
+        )}&page=${page || currentPage}`
       );
       setTasks(res.tasks);
+      setTotalResults(res.total || 0);
     } catch (err) {
       console.error("Failed to fetch tasks:", err);
     }
@@ -54,7 +58,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (searchQuery === null) return;
     const delayDebounce = setTimeout(() => {
-      fetchTasks(searchQuery);
+      fetchTasks(searchQuery, 1);
     }, 500);
 
     return () => clearTimeout(delayDebounce);
@@ -76,6 +80,11 @@ export default function Dashboard() {
           onChange={(e) => setSearchQuery(e.target.value)}
         />
       </div>
+      {totalResults > 0 && (
+        <p className="text-sm text-gray-600 mb-3">
+          Showing {tasks.length} of {totalResults} tasks
+        </p>
+      )}
 
       {loading && <p className="text-gray-500">Loading tasks...</p>}
       {error && <p className="text-red-500">{error}</p>}

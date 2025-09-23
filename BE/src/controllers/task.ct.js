@@ -11,7 +11,7 @@ async function createTask(req, res, next) {
     description,
     dueDate,
     created_by: _id,
-    status
+    status,
   }).save();
   res.data = {
     statusCode: 201,
@@ -64,6 +64,7 @@ async function getTasks(req, res, next) {
   page = Number(page);
   limit = Number(limit);
   const pipeline = [];
+  const countPipeline = [];
   const matchStage = {
     created_at: {
       $exists: true,
@@ -78,6 +79,29 @@ async function getTasks(req, res, next) {
     },
     {
       $limit: limit,
+    },
+  ];
+  const userStage = [
+    {
+      $lookup: {
+        from: "users",
+        localField: "created_by",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    {
+      $unwind: { path: "$user", preserveNullAndEmptyArrays: true },
+    },
+    {
+      $addFields: {
+        user: "$user.name",
+      },
+    },
+    {
+      $project: {
+        user: 0,
+      },
     },
   ];
   if (role !== USER_ROLES.ADMIN) {
@@ -95,12 +119,24 @@ async function getTasks(req, res, next) {
     {
       $match: matchStage,
     },
-    ...sortStage
+    ...sortStage,
+    ...(role === USER_ROLES.ADMIN ? userStage : [])
   );
-  const results = await Task.aggregate(pipeline);
+  countPipeline.push(
+    {
+      $match: matchStage,
+    },
+    { $count: "taskCount" }
+  );
+  const [results, countData] = await Promise.all([
+    Task.aggregate(pipeline),
+    Task.aggregate(countPipeline),
+  ]);
+  const total = countData?.[0]?.taskCount || 0;
 
   res.data = {
     statusCode: 200,
+    total,
     tasks: results,
   };
   next();
