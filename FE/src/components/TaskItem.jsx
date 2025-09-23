@@ -1,9 +1,13 @@
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { AuthContext } from "../context/AuthContext";
 
 export default function TaskItem({ task, onEdit, onDelete }) {
   const { user } = useContext(AuthContext);
+
+  const showAuthor = useMemo(() => {
+    return user?.role === "admin" && task?.created_by !== user?._id;
+  }, [task, user]);
 
   return (
     <div className="bg-white shadow-md rounded-lg p-4 mb-4 flex flex-col sm:flex-row sm:items-center justify-between transition hover:shadow-lg">
@@ -33,7 +37,7 @@ export default function TaskItem({ task, onEdit, onDelete }) {
       </div>
 
       <div className="flex gap-4 mt-3 sm:mt-0 items-center">
-        {user?.role === "admin" ? (
+        {showAuthor ? (
           <span className="text-gray-700 text-sm">
             Author: {task?.author || "Unknown"}
           </span>
