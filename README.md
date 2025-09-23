@@ -67,7 +67,7 @@ npm run dev
 1. Go to the `FE` folder and create a `.env` file with the following content:
 
 ```env
-VITE_API_URL=<your-backend-endpoint>
+VITE_API_URL=<your-backend-endpoint> # Use The copied endpoint from the forwarding port.
 ```
 
 2. Install dependencies:
@@ -88,5 +88,3 @@ npm run dev
 
 ## Notes
 - Ensure MongoDB is running locally or use a cloud MongoDB URL.
-- Use a strong JWT_SECRET in production.
-- Make sure the frontend points to the correct backend API endpoint.
