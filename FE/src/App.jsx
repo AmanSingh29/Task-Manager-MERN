@@ -4,10 +4,12 @@ import Signup from "./pages/Auth/Signup";
 import Dashboard from "./pages/Dashboard";
 import { AuthContext } from "./context/AuthContext";
 import { useContext } from "react";
+import LoadingPage from "./pages/LoadingPage";
+import NotFound from "./pages/NotFound";
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <LoadingPage />;
   return user ? children : <Navigate to="/login" />;
 };
 
@@ -25,7 +27,7 @@ export default function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route path="*" element={<h1>404 Not Found</h1>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
