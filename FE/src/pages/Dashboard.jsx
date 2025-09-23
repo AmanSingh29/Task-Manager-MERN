@@ -5,16 +5,28 @@ import DashboardLayout from "../components/DashboardLayout";
 import TaskForm from "../components/TaskForm";
 import ConfirmationModal from "../components/ConfirmationModal";
 import { DELETE_TASK, GET_TASK } from "../contants/endPoints";
+import SearchBar from "../components/SearchBar";
+import Pagination from "../components/Pagination";
 
 export default function Dashboard() {
   const { get, loading, error, del } = useApi();
   const [tasks, setTasks] = useState([]);
-  const [modalOpen, setModalOpen] = useState("");
-  const [currentTask, setCurrentTask] = useState(null);
+  const [modalData, setModalData] = useState({ type: "", task: null });
+  const [searchQuery, setSearchQuery] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = 10;
 
-  const fetchTasks = async () => {
+  const handleCloseModal = () => {
+    setModalData({ type: "", task: null });
+  };
+
+  const fetchTasks = async (query = "") => {
     try {
-      const res = await get(GET_TASK);
+      const res = await get(
+        `${GET_TASK}?search_query=${encodeURIComponent(
+          query
+        )}&page=${currentPage}`
+      );
       setTasks(res.tasks);
     } catch (err) {
       console.error("Failed to fetch tasks:", err);
@@ -22,40 +34,48 @@ export default function Dashboard() {
   };
 
   const handleEditTask = (task) => {
-    setCurrentTask(task);
-    setModalOpen("edit");
+    setModalData({ type: "edit", task });
   };
 
   const handleConfirmDelete = async () => {
-    await del(DELETE_TASK, { _id: currentTask?._id });
-    fetchTasks();
-    setModalOpen(null);
-    setCurrentTask(null);
+    await del(DELETE_TASK, { _id: modalData.task?._id });
+    await fetchTasks();
+    handleCloseModal();
   };
 
   const handleTaskDelete = (task) => {
-    setCurrentTask(task);
-    setModalOpen("delete");
-  };
-
-  const handleCloseModal = () => {
-    setModalOpen(null);
-    setCurrentTask(null);
+    setModalData({ type: "delete", task });
   };
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [currentPage]);
+
+  useEffect(() => {
+    if (searchQuery === null) return;
+    const delayDebounce = setTimeout(() => {
+      fetchTasks(searchQuery);
+    }, 500);
+
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
 
   return (
     <DashboardLayout>
       <h1 className="text-2xl font-bold mb-4">Welcome to your Task Manager</h1>
-      <button
-        className="bg-indigo-600 text-white px-4 py-2 rounded-md mb-4 hover:bg-indigo-700 transition"
-        onClick={() => setModalOpen("edit")}
-      >
-        Add Task
-      </button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <button
+          className="bg-indigo-600 cursor-pointer text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition"
+          onClick={() => setModalData({ type: "edit", task: null })}
+        >
+          Add Task
+        </button>
+
+        <SearchBar
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
 
       {loading && <p className="text-gray-500">Loading tasks...</p>}
       {error && <p className="text-red-500">{error}</p>}
@@ -74,16 +94,21 @@ export default function Dashboard() {
           ))}
         </div>
       )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
       <TaskForm
-        isOpen={modalOpen === "edit"}
+        isOpen={modalData.type === "edit"}
         onClose={handleCloseModal}
         onSuccess={fetchTasks}
-        task={currentTask}
+        task={modalData.task}
       />
       <ConfirmationModal
-        isOpen={modalOpen === "delete"}
+        isOpen={modalData.type === "delete"}
         title="Delete Task?"
-        description={`Are you sure you want to delete "${currentTask?.title}"?`}
+        description={`Are you sure you want to delete "${modalData.task?.title}"?`}
         onConfirm={handleConfirmDelete}
         onCancel={handleCloseModal}
         loading={loading}
