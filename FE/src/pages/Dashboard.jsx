@@ -25,10 +25,14 @@ export default function Dashboard() {
 
   const fetchTasks = async (query = "", page) => {
     try {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
       const res = await get(
-        `${GET_TASK}?search_query=${encodeURIComponent(
-          query
-        )}&page=${page || currentPage}`
+        `${GET_TASK}?search_query=${encodeURIComponent(query)}&page=${
+          page || currentPage
+        }`
       );
       setTasks(res.tasks);
       setTotalResults(res.total || 0);
