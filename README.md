@@ -86,5 +86,22 @@ npm run dev
 
 ---
 
+## Creating an Admin User
+
+1. First, create a normal user account through the Signup page.
+2. Open your MongoDB database (local or cloud) and find the newly created user in the `users` collection.
+3. Change the user's role from `user` to `admin` by updating the `role` field:
+
+```json
+{
+  "role": "admin"
+}
+```
+
+4. Save the changes in the database.
+5. Login with that user’s credentials again. Now the user will have admin access and can view/manage all tasks in the dashboard.
+
+---
+
 ## Notes
 - Ensure MongoDB is running locally or use a cloud MongoDB URL.
